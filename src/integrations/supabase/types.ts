@@ -9,7 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          price: number
+          store_owner_id: string
+          title: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          price: number
+          store_owner_id: string
+          title: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          price?: number
+          store_owner_id?: string
+          title?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_store_owner_id_fkey"
+            columns: ["store_owner_id"]
+            isOneToOne: false
+            referencedRelation: "store_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_owners: {
+        Row: {
+          business_name: string
+          created_at: string
+          currency: string
+          email: string
+          id: string
+          logo_url: string | null
+          updated_at: string
+          whatsapp_number: string
+        }
+        Insert: {
+          business_name?: string
+          created_at?: string
+          currency?: string
+          email: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Update: {
+          business_name?: string
+          created_at?: string
+          currency?: string
+          email?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

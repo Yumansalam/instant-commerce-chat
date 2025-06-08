@@ -6,77 +6,30 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useStore } from '@/hooks/useStore';
+import { useProducts } from '@/hooks/useProducts';
+import { CurrencyDisplay } from '@/components/CurrencyDisplay';
 
-interface Product {
+interface CartItem {
   id: string;
   title: string;
   description: string;
   price: number;
-  image_url: string;
-  category?: string;
-  user_id: string;
-}
-
-interface CartItem extends Product {
+  image_url: string | null;
   quantity: number;
 }
 
-interface StoreInfo {
-  business_name: string;
-  logo_url?: string;
-  whatsapp_number: string;
-}
-
 const Index = () => {
-  const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showCart, setShowCart] = useState(false);
   const { toast } = useToast();
+  
+  const { storeSettings, loading: storeLoading } = useStore();
+  const { products, loading: productsLoading } = useProducts();
 
-  // Mock data for demo - in real app this would come from Supabase
-  useEffect(() => {
-    // Simulate loading store info and products
-    setStoreInfo({
-      business_name: "TechStore Plus",
-      logo_url: "/placeholder.svg",
-      whatsapp_number: "+1234567890"
-    });
-
-    setProducts([
-      {
-        id: "1",
-        title: "Premium Wireless Headphones",
-        description: "High-quality wireless headphones with noise cancellation and 24-hour battery life.",
-        price: 299.99,
-        image_url: "/placeholder.svg",
-        category: "Electronics",
-        user_id: "1"
-      },
-      {
-        id: "2", 
-        title: "Organic Cotton T-Shirt",
-        description: "Soft, comfortable organic cotton t-shirt available in multiple colors.",
-        price: 29.99,
-        image_url: "/placeholder.svg",
-        category: "Fashion",
-        user_id: "1"
-      },
-      {
-        id: "3",
-        title: "Artisan Coffee Beans",
-        description: "Premium single-origin coffee beans roasted to perfection.",
-        price: 24.99,
-        image_url: "/placeholder.svg",
-        category: "Food",
-        user_id: "1"
-      }
-    ]);
-  }, []);
-
-  const addToCart = (product: Product) => {
+  const addToCart = (product: any) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
@@ -118,13 +71,14 @@ const Index = () => {
 
   const generateWhatsAppMessage = () => {
     const cartItems = cart.map(item => 
-      `${item.title} - Quantity: ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`
+      `${item.title} - Quantity: ${item.quantity} - ${storeSettings?.currency || 'USD'} ${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
     
     const total = getCartTotal().toFixed(2);
+    const currency = storeSettings?.currency || 'USD';
     
     return encodeURIComponent(
-      `Hi! I'd like to place an order:\n\n${cartItems}\n\nTotal: $${total}\n\nPlease confirm my order. Thank you!`
+      `Hi! I'd like to place an order:\n\n${cartItems}\n\nTotal: ${currency} ${total}\n\nPlease confirm my order. Thank you!`
     );
   };
 
@@ -138,7 +92,7 @@ const Index = () => {
       return;
     }
 
-    if (!storeInfo?.whatsapp_number) {
+    if (!storeSettings?.whatsapp_number) {
       toast({
         title: "Store not configured",
         description: "WhatsApp number not set up for this store.",
@@ -148,42 +102,54 @@ const Index = () => {
     }
 
     const message = generateWhatsAppMessage();
-    const whatsappUrl = `https://wa.me/${storeInfo.whatsapp_number.replace(/[^0-9]/g, '')}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${storeSettings.whatsapp_number.replace(/[^0-9]/g, '')}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
-  const filteredProducts = products.filter(product => {
+  const visibleProducts = products.filter(p => p.visible);
+  const filteredProducts = visibleProducts.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const categories = ['all', ...Array.from(new Set(visibleProducts.map(p => p.category).filter(Boolean)))];
+
+  if (storeLoading || productsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your store...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-purple-100">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {storeInfo?.logo_url && (
+              {storeSettings?.logo_url && (
                 <img 
-                  src={storeInfo.logo_url} 
+                  src={storeSettings.logo_url} 
                   alt="Store Logo"
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-12 w-12 rounded-full object-cover border-2 border-purple-200"
                 />
               )}
-              <h1 className="text-2xl font-bold text-gray-900">
-                {storeInfo?.business_name || 'Loading...'}
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                {storeSettings?.business_name || 'My Store'}
               </h1>
             </div>
             
             <div className="flex items-center space-x-4">
               <a 
                 href="/admin" 
-                className="text-sm text-gray-600 hover:text-primary flex items-center space-x-1"
+                className="text-sm text-purple-600 hover:text-purple-800 flex items-center space-x-1 font-medium"
               >
                 <Store className="h-4 w-4" />
                 <span>Admin</span>
@@ -192,14 +158,14 @@ const Index = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="relative"
+                className="relative border-purple-200 hover:bg-purple-50"
                 onClick={() => setShowCart(!showCart)}
               >
                 <ShoppingCart className="h-4 w-4" />
                 {getCartItemCount() > 0 && (
                   <Badge 
                     variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-gradient-to-r from-pink-500 to-red-500"
                   >
                     {getCartItemCount()}
                   </Badge>
@@ -214,12 +180,12 @@ const Index = () => {
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 h-4 w-4" />
             <Input
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-purple-200 focus:border-purple-400"
             />
           </div>
           
@@ -230,6 +196,10 @@ const Index = () => {
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
+                className={selectedCategory === category 
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  : "border-purple-200 hover:bg-purple-50"
+                }
               >
                 {category === 'all' ? 'All Categories' : category}
               </Button>
@@ -240,22 +210,22 @@ const Index = () => {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map(product => (
-            <Card key={product.id} className="group hover:shadow-lg transition-shadow">
+            <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 border-purple-100 hover:border-purple-300 bg-white/70 backdrop-blur-sm">
               <CardContent className="p-4">
-                <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
+                <div className="aspect-square bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg mb-4 overflow-hidden">
                   <img
-                    src={product.image_url}
+                    src={product.image_url || "/placeholder.svg"}
                     alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.title}</h3>
+                <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-800">{product.title}</h3>
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-primary">
-                    ${product.price.toFixed(2)}
+                  <span className="text-2xl font-bold text-purple-600">
+                    <CurrencyDisplay amount={product.price} currency={storeSettings?.currency || 'USD'} />
                   </span>
                   <Button
                     size="sm"
@@ -280,11 +250,11 @@ const Index = () => {
       {/* Floating Cart */}
       {showCart && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center p-4">
-          <div className="bg-white rounded-t-lg w-full max-w-md max-h-96 overflow-hidden">
-            <div className="p-4 border-b">
+          <div className="bg-white rounded-t-lg w-full max-w-md max-h-96 overflow-hidden shadow-2xl">
+            <div className="p-4 border-b bg-gradient-to-r from-purple-600 to-blue-600 text-white">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Your Cart</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowCart(false)}>
+                <Button variant="ghost" size="sm" onClick={() => setShowCart(false)} className="text-white hover:bg-white/20">
                   ×
                 </Button>
               </div>
@@ -296,15 +266,17 @@ const Index = () => {
               ) : (
                 <div className="space-y-3">
                   {cart.map(item => (
-                    <div key={item.id} className="flex items-center space-x-3 bg-gray-50 p-3 rounded">
+                    <div key={item.id} className="flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded">
                       <img
-                        src={item.image_url}
+                        src={item.image_url || "/placeholder.svg"}
                         alt={item.title}
                         className="w-12 h-12 object-cover rounded"
                       />
                       <div className="flex-1">
                         <h4 className="font-medium text-sm">{item.title}</h4>
-                        <p className="text-primary font-semibold">${item.price.toFixed(2)}</p>
+                        <p className="text-purple-600 font-semibold">
+                          <CurrencyDisplay amount={item.price} currency={storeSettings?.currency || 'USD'} />
+                        </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button
@@ -330,11 +302,11 @@ const Index = () => {
             </div>
             
             {cart.length > 0 && (
-              <div className="p-4 border-t bg-gray-50">
+              <div className="p-4 border-t bg-gradient-to-r from-purple-50 to-blue-50">
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-semibold">Total:</span>
-                  <span className="text-xl font-bold text-primary">
-                    ${getCartTotal().toFixed(2)}
+                  <span className="text-xl font-bold text-purple-600">
+                    <CurrencyDisplay amount={getCartTotal()} currency={storeSettings?.currency || 'USD'} />
                   </span>
                 </div>
                 <Button
