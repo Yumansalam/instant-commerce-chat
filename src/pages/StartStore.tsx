@@ -7,9 +7,11 @@ import { Label } from '@/components/ui/label';
 import { FileUpload } from '@/components/FileUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const StartStore = () => {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, updateProfile, signOut } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
@@ -53,7 +55,15 @@ const StartStore = () => {
         .update({ role: 'admin', store_id: data.id })
         .eq('id', user.id);
       await updateProfile({ role: 'admin', store_id: data.id });
+      toast({ title: 'Store created', description: 'Your store is ready!' });
       navigate('/admin');
+    }
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
     setLoading(false);
   };
@@ -61,8 +71,19 @@ const StartStore = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-4">
       <Card className="w-full max-w-lg bg-white/80 backdrop-blur-sm border-purple-100">
-        <CardHeader>
-          <CardTitle className="text-xl text-center">Start Your Store</CardTitle>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="text-xl">Start Your Store</CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              await signOut();
+              navigate('/auth');
+            }}
+            className="text-xs text-red-600 hover:bg-red-50"
+          >
+            Sign Out
+          </Button>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

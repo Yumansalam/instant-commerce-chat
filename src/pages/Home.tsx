@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Home = () => {
   return (
@@ -6,9 +7,20 @@ const Home = () => {
       <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
         Instant Commerce
       </h1>
-      <div className="space-x-4">
-        <Link to="/auth" className="text-purple-600 underline">Sign In</Link>
-        <Link to="/start-store" className="text-purple-600 underline">Start a Store</Link>
+      <div className="flex space-x-4">
+        <Button
+          asChild
+          className="h-9 text-sm bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+        >
+          <Link to="/auth">Sign In</Link>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          className="h-9 text-sm border-purple-300 hover:bg-purple-50"
+        >
+          <Link to="/start-store">Start a Store</Link>
+        </Button>
       </div>
     </div>
   );
