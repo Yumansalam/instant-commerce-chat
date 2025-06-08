@@ -18,9 +18,9 @@ const Account = () => {
     profile_picture_url: profile?.profile_picture_url || ''
   });
 
-  // Redirect if not logged in
-  if (!loading && !user) {
-    navigate('/auth');
+  // Redirect if not logged in or not buyer
+  if (!loading && (!user || profile?.role !== 'buyer')) {
+    navigate('/');
     return null;
   }
 

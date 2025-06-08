@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, LogIn, Settings, Plus, Minus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,22 +14,23 @@ import { CurrencyDisplay } from '@/components/CurrencyDisplay';
 
 interface CartItem {
   id: string;
-  title: string;
+  name: string;
   description: string;
   price: number;
   image_url: string | null;
   quantity: number;
 }
 
-const Index = () => {
+const Storefront = () => {
+  const { store_slug } = useParams();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showCart, setShowCart] = useState(false);
   const { toast } = useToast();
-  
-  const { storeSettings, loading: storeLoading } = useStore();
-  const { products, loading: productsLoading } = useProducts();
+
+  const { storeSettings, loading: storeLoading } = useStore(store_slug as string);
+  const { products, loading: productsLoading } = useProducts(storeSettings?.id);
   const { user, profile, isAdmin } = useAuth();
 
   const addToCart = (product: any) => {
@@ -46,7 +47,7 @@ const Index = () => {
     });
     toast({
       title: "Added to cart",
-      description: `${product.title} has been added to your cart.`,
+      description: `${product.name} has been added to your cart.`,
     });
   };
 
@@ -74,12 +75,12 @@ const Index = () => {
 
   const generateWhatsAppMessage = () => {
     const cartItems = cart.map(item => 
-      `${item.title} - Qty: ${item.quantity} - ${storeSettings?.currency || 'USD'} ${(item.price * item.quantity).toFixed(2)}`
+      `${item.name} - Qty: ${item.quantity} - USD ${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
     
     const total = getCartTotal().toFixed(2);
-    const currency = storeSettings?.currency || 'USD';
-    const storeName = storeSettings?.business_name || 'Our Store';
+    const currency = 'USD';
+    const storeName = storeSettings?.name || 'Our Store';
     
     return encodeURIComponent(
       `Hi! I'd like to order the following from ${storeName}:\n\n${cartItems}\n\nTotal: ${currency} ${total}\n\nPlease confirm my order. Thank you!`
@@ -110,10 +111,10 @@ const Index = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const visibleProducts = products.filter(p => p.visible);
+  const visibleProducts = products.filter(p => p.is_visible);
   const filteredProducts = visibleProducts.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -146,7 +147,7 @@ const Index = () => {
                 />
               )}
               <h1 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent truncate">
-                {storeSettings?.business_name || 'My Store'}
+                  {storeSettings?.name || 'My Store'}
               </h1>
             </div>
             
@@ -253,17 +254,17 @@ const Index = () => {
                 <div className="aspect-square bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg mb-3 overflow-hidden">
                   <img
                     src={product.image_url || "/placeholder.svg"}
-                    alt={product.title}
+                      alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 
-                <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{product.title}</h3>
+                <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{product.name}</h3>
                 <p className="text-gray-600 text-xs mb-2 line-clamp-1">{product.description}</p>
                 
                 <div className="flex flex-col space-y-2">
                   <span className="text-lg font-bold text-purple-600">
-                    <CurrencyDisplay amount={product.price} currency={storeSettings?.currency || 'USD'} />
+                      <CurrencyDisplay amount={product.price} currency={'USD'} />
                   </span>
                   <Button
                     size="sm"
@@ -307,13 +308,13 @@ const Index = () => {
                     <div key={item.id} className="flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded">
                       <img
                         src={item.image_url || "/placeholder.svg"}
-                        alt={item.title}
+                          alt={item.name}
                         className="w-10 h-10 object-cover rounded"
                       />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{item.title}</h4>
+                          <h4 className="font-medium text-sm truncate">{item.name}</h4>
                         <p className="text-purple-600 font-semibold text-sm">
-                          <CurrencyDisplay amount={item.price} currency={storeSettings?.currency || 'USD'} />
+                            <CurrencyDisplay amount={item.price} currency={'USD'} />
                         </p>
                       </div>
                       <div className="flex items-center space-x-1">
@@ -346,7 +347,7 @@ const Index = () => {
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-semibold text-sm">Total:</span>
                   <span className="text-lg font-bold text-purple-600">
-                    <CurrencyDisplay amount={getCartTotal()} currency={storeSettings?.currency || 'USD'} />
+                      <CurrencyDisplay amount={getCartTotal()} currency={'USD'} />
                   </span>
                 </div>
                 <Button
@@ -364,4 +365,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Storefront;

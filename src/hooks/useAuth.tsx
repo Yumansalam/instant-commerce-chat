@@ -11,6 +11,7 @@ interface Profile {
   phone: string | null;
   profile_picture_url: string | null;
   role: 'buyer' | 'admin';
+  store_id: string | null;
   created_at: string;
   updated_at: string;
 }
