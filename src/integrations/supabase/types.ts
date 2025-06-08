@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      orders: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          items: Json
+          status: string
+          total_amount: number
+          whatsapp_message: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          items: Json
+          status?: string
+          total_amount: number
+          whatsapp_message?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          items?: Json
+          status?: string
+          total_amount?: number
+          whatsapp_message?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null
@@ -56,6 +92,39 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          profile_picture_url: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          profile_picture_url?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          profile_picture_url?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       store_owners: {
         Row: {
           business_name: string
@@ -64,6 +133,7 @@ export type Database = {
           email: string
           id: string
           logo_url: string | null
+          profile_id: string | null
           updated_at: string
           whatsapp_number: string
         }
@@ -74,6 +144,7 @@ export type Database = {
           email: string
           id?: string
           logo_url?: string | null
+          profile_id?: string | null
           updated_at?: string
           whatsapp_number?: string
         }
@@ -84,10 +155,19 @@ export type Database = {
           email?: string
           id?: string
           logo_url?: string | null
+          profile_id?: string | null
           updated_at?: string
           whatsapp_number?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "store_owners_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

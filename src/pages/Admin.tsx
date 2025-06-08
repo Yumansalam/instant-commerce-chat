@@ -14,8 +14,9 @@ import { useProducts } from '@/hooks/useProducts';
 import { FileUpload } from '@/components/FileUpload';
 import { AIProductGenerator } from '@/components/AIProductGenerator';
 import { CurrencyDisplay } from '@/components/CurrencyDisplay';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
-const Admin = () => {
+const AdminContent = () => {
   const { storeSettings, updateStoreSettings, loading: storeLoading } = useStore();
   const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading } = useProducts();
   const [showProductForm, setShowProductForm] = useState(false);
@@ -138,8 +139,8 @@ const Admin = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600">Loading admin dashboard...</p>
         </div>
       </div>
     );
@@ -147,44 +148,44 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="container mx-auto px-3 py-4">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Store Dashboard
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Admin Dashboard
             </h1>
-            <p className="text-gray-600 mt-2">Manage your store and products</p>
+            <p className="text-gray-600 mt-1 text-sm">Manage your store and products</p>
           </div>
-          <div className="flex space-x-4">
-            <Button variant="outline" asChild className="border-purple-200 hover:bg-purple-50">
-              <a href="/" className="flex items-center space-x-2">
-                <ArrowLeft className="h-4 w-4" />
-                <span>View Store</span>
+          <div className="flex space-x-2">
+            <Button variant="outline" asChild className="border-purple-200 hover:bg-purple-50 h-8 px-3 text-xs">
+              <a href="/" className="flex items-center space-x-1">
+                <ArrowLeft className="h-3 w-3" />
+                <span>Store</span>
               </a>
             </Button>
             <Button 
               onClick={() => setShowProductForm(true)}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 h-8 px-3 text-xs"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 w-3 mr-1" />
               Add Product
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="bg-white/70 backdrop-blur-sm border border-purple-200">
-            <TabsTrigger value="products" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">Products</TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">Store Settings</TabsTrigger>
+        <Tabs defaultValue="products" className="space-y-4">
+          <TabsList className="bg-white/70 backdrop-blur-sm border border-purple-200 h-8">
+            <TabsTrigger value="products" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-xs h-6">Products</TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-xs h-6">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
             {!showProductForm ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map(product => (
                   <Card key={product.id} className="relative bg-white/70 backdrop-blur-sm border-purple-100 hover:border-purple-300 transition-all duration-300">
-                    <CardContent className="p-4">
-                      <div className="aspect-square bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg mb-4 overflow-hidden">
+                    <CardContent className="p-3">
+                      <div className="aspect-square bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg mb-3 overflow-hidden">
                         <img
                           src={product.image_url || "/placeholder.svg"}
                           alt={product.title}
@@ -194,28 +195,28 @@ const Admin = () => {
                       
                       <div className="space-y-2">
                         <div className="flex items-start justify-between">
-                          <h3 className="font-semibold line-clamp-2">{product.title}</h3>
-                          <Badge variant={product.visible ? "default" : "secondary"} className={product.visible ? "bg-green-500" : ""}>
+                          <h3 className="font-semibold text-sm line-clamp-2">{product.title}</h3>
+                          <Badge variant={product.visible ? "default" : "secondary"} className={`text-xs ${product.visible ? "bg-green-500" : ""}`}>
                             {product.visible ? "Visible" : "Hidden"}
                           </Badge>
                         </div>
                         
-                        <p className="text-gray-600 text-sm line-clamp-2">{product.description}</p>
-                        <p className="text-xl font-bold text-purple-600">
+                        <p className="text-gray-600 text-xs line-clamp-2">{product.description}</p>
+                        <p className="text-lg font-bold text-purple-600">
                           <CurrencyDisplay amount={product.price} currency={storeSettings?.currency || 'USD'} />
                         </p>
                         
                         {product.category && (
-                          <Badge variant="outline" className="border-purple-200">{product.category}</Badge>
+                          <Badge variant="outline" className="border-purple-200 text-xs">{product.category}</Badge>
                         )}
                       </div>
                       
-                      <div className="flex space-x-2 mt-4">
+                      <div className="flex space-x-1 mt-3">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleEditProduct(product)}
-                          className="border-purple-200 hover:bg-purple-50"
+                          className="border-purple-200 hover:bg-purple-50 h-7 w-7 p-0"
                         >
                           <Edit className="h-3 w-3" />
                         </Button>
@@ -223,7 +224,7 @@ const Admin = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => toggleProductVisibility(product.id, product.visible)}
-                          className="border-purple-200 hover:bg-purple-50"
+                          className="border-purple-200 hover:bg-purple-50 h-7 w-7 p-0"
                         >
                           {product.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                         </Button>
@@ -231,7 +232,7 @@ const Admin = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => deleteProduct(product.id)}
-                          className="border-red-200 hover:bg-red-50 hover:border-red-300"
+                          className="border-red-200 hover:bg-red-50 hover:border-red-300 h-7 w-7 p-0"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -241,9 +242,9 @@ const Admin = () => {
                 ))}
                 
                 {products.length === 0 && (
-                  <div className="col-span-full text-center py-12">
-                    <div className="bg-white/70 backdrop-blur-sm rounded-lg p-8 border border-purple-100">
-                      <p className="text-gray-500">No products yet. Add your first product to get started!</p>
+                  <div className="col-span-full text-center py-8">
+                    <div className="bg-white/70 backdrop-blur-sm rounded-lg p-6 border border-purple-100">
+                      <p className="text-gray-500 text-sm">No products yet. Add your first product to get started!</p>
                     </div>
                   </div>
                 )}
@@ -251,26 +252,26 @@ const Admin = () => {
             ) : (
               <Card className="bg-white/70 backdrop-blur-sm border-purple-100">
                 <CardHeader>
-                  <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                     {editingProduct ? 'Edit Product' : 'Add New Product'}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-4">
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="space-y-3">
                       <div>
-                        <Label htmlFor="title">Product Title</Label>
+                        <Label htmlFor="title" className="text-xs">Product Title</Label>
                         <Input
                           id="title"
                           value={productForm.title}
                           onChange={(e) => setProductForm(prev => ({ ...prev, title: e.target.value }))}
                           placeholder="Enter product title"
-                          className="border-purple-200 focus:border-purple-400"
+                          className="border-purple-200 focus:border-purple-400 h-8 text-sm"
                         />
                       </div>
                       
                       <div>
-                        <Label htmlFor="price">Price ({storeSettings?.currency || 'USD'})</Label>
+                        <Label htmlFor="price" className="text-xs">Price ({storeSettings?.currency || 'USD'})</Label>
                         <Input
                           id="price"
                           type="number"
@@ -278,26 +279,26 @@ const Admin = () => {
                           value={productForm.price}
                           onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
                           placeholder="0.00"
-                          className="border-purple-200 focus:border-purple-400"
+                          className="border-purple-200 focus:border-purple-400 h-8 text-sm"
                         />
                       </div>
                       
                       <div>
-                        <Label htmlFor="category">Category</Label>
+                        <Label htmlFor="category" className="text-xs">Category</Label>
                         <Input
                           id="category"
                           value={productForm.category}
                           onChange={(e) => setProductForm(prev => ({ ...prev, category: e.target.value }))}
                           placeholder="e.g., Electronics, Fashion, Food"
-                          className="border-purple-200 focus:border-purple-400"
+                          className="border-purple-200 focus:border-purple-400 h-8 text-sm"
                         />
                       </div>
                       
                       <div>
-                        <Label htmlFor="image">Product Image</Label>
+                        <Label htmlFor="image" className="text-xs">Product Image</Label>
                         <FileUpload onUpload={handleProductImageUpload} folder="products">
-                          <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors">
-                            <p className="text-gray-600">Click to upload image</p>
+                          <div className="border-2 border-dashed border-purple-300 rounded-lg p-3 text-center hover:border-purple-400 transition-colors cursor-pointer">
+                            <p className="text-gray-600 text-xs">Click to upload image</p>
                           </div>
                         </FileUpload>
                         {productForm.image_url && (
@@ -305,22 +306,22 @@ const Admin = () => {
                             <img
                               src={productForm.image_url}
                               alt="Preview"
-                              className="w-full h-32 object-cover rounded border"
+                              className="w-full h-24 object-cover rounded border"
                             />
                           </div>
                         )}
                       </div>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description" className="text-xs">Description</Label>
                         <Textarea
                           id="description"
                           value={productForm.description}
                           onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
                           placeholder="Describe your product..."
-                          className="min-h-32 border-purple-200 focus:border-purple-400"
+                          className="min-h-24 border-purple-200 focus:border-purple-400 text-sm"
                         />
                       </div>
                       
@@ -331,13 +332,13 @@ const Admin = () => {
                     </div>
                   </div>
                   
-                  <div className="flex space-x-4">
+                  <div className="flex space-x-3">
                     <Button 
                       onClick={handleSaveProduct}
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 h-8 px-4 text-xs"
                     >
-                      <Save className="h-4 w-4 mr-2" />
-                      {editingProduct ? 'Update Product' : 'Save Product'}
+                      <Save className="h-3 w-3 mr-1" />
+                      {editingProduct ? 'Update' : 'Save'}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -353,7 +354,7 @@ const Admin = () => {
                           visible: true
                         });
                       }}
-                      className="border-purple-200 hover:bg-purple-50"
+                      className="border-purple-200 hover:bg-purple-50 h-8 px-4 text-xs"
                     >
                       Cancel
                     </Button>
@@ -366,46 +367,46 @@ const Admin = () => {
           <TabsContent value="settings">
             <Card className="bg-white/70 backdrop-blur-sm border-purple-100">
               <CardHeader>
-                <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <CardTitle className="text-xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                   Store Settings
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="businessName">Business Name</Label>
+                    <Label htmlFor="businessName" className="text-xs">Business Name</Label>
                     <Input
                       id="businessName"
                       value={storeForm.business_name}
                       onChange={(e) => setStoreForm(prev => ({ ...prev, business_name: e.target.value }))}
                       placeholder="Your Store Name"
-                      className="border-purple-200 focus:border-purple-400"
+                      className="border-purple-200 focus:border-purple-400 h-8 text-sm"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                    <Label htmlFor="whatsapp" className="text-xs">WhatsApp Number</Label>
                     <Input
                       id="whatsapp"
                       value={storeForm.whatsapp_number}
                       onChange={(e) => setStoreForm(prev => ({ ...prev, whatsapp_number: e.target.value }))}
                       placeholder="+1234567890"
-                      className="border-purple-200 focus:border-purple-400"
+                      className="border-purple-200 focus:border-purple-400 h-8 text-sm"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="currency">Currency</Label>
+                    <Label htmlFor="currency" className="text-xs">Currency</Label>
                     <Select
                       value={storeForm.currency}
                       onValueChange={(value) => setStoreForm(prev => ({ ...prev, currency: value }))}
                     >
-                      <SelectTrigger className="border-purple-200 focus:border-purple-400">
+                      <SelectTrigger className="border-purple-200 focus:border-purple-400 h-8 text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {currencies.map((currency) => (
-                          <SelectItem key={currency.code} value={currency.code}>
+                          <SelectItem key={currency.code} value={currency.code} className="text-sm">
                             {currency.code} - {currency.name}
                           </SelectItem>
                         ))}
@@ -414,17 +415,17 @@ const Admin = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="logo">Store Logo</Label>
+                    <Label htmlFor="logo" className="text-xs">Store Logo</Label>
                     <FileUpload onUpload={handleLogoUpload} folder="logos">
-                      <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors">
+                      <div className="border-2 border-dashed border-purple-300 rounded-lg p-3 text-center hover:border-purple-400 transition-colors cursor-pointer">
                         {storeForm.logo_url ? (
                           <img
                             src={storeForm.logo_url}
                             alt="Current logo"
-                            className="w-16 h-16 object-cover rounded mx-auto"
+                            className="w-12 h-12 object-cover rounded mx-auto"
                           />
                         ) : (
-                          <p className="text-gray-600">Click to upload logo</p>
+                          <p className="text-gray-600 text-xs">Click to upload logo</p>
                         )}
                       </div>
                     </FileUpload>
@@ -433,9 +434,9 @@ const Admin = () => {
                 
                 <Button 
                   onClick={handleSaveSettings}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 h-8 px-4 text-xs"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-3 w-3 mr-1" />
                   Save Settings
                 </Button>
               </CardContent>
@@ -444,6 +445,14 @@ const Admin = () => {
         </Tabs>
       </div>
     </div>
+  );
+};
+
+const Admin = () => {
+  return (
+    <ProtectedRoute requireAdmin={true}>
+      <AdminContent />
+    </ProtectedRoute>
   );
 };
 
