@@ -2,27 +2,35 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface StoreSettings {
   id: string;
-  business_name: string;
+  name: string;
+  slug: string;
+  description: string | null;
   whatsapp_number: string;
   logo_url: string | null;
-  currency: string;
-  email: string;
+  banner_url: string | null;
+  theme_color: string | null;
+  created_by: string;
 }
 
-export const useStore = () => {
+export const useStore = (slug?: string) => {
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { profile } = useAuth();
 
   const fetchStoreSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('store_owners')
-        .select('*')
-        .single();
+      let query = supabase.from('stores').select('*');
+      if (slug) {
+        query = query.eq('slug', slug);
+      } else if (profile?.store_id) {
+        query = query.eq('id', profile.store_id);
+      }
+      const { data, error } = await query.single();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching store settings:', error);
@@ -41,34 +49,16 @@ export const useStore = () => {
 
   const updateStoreSettings = async (updates: Partial<StoreSettings>) => {
     try {
-      if (!storeSettings) {
-        // Create new store
-        const { data, error } = await supabase
-          .from('store_owners')
-          .insert([{
-            business_name: updates.business_name || '',
-            whatsapp_number: updates.whatsapp_number || '',
-            logo_url: updates.logo_url || null,
-            currency: updates.currency || 'USD',
-            email: updates.email || 'store@example.com'
-          }])
-          .select()
-          .single();
+      if (!storeSettings) return;
+      const { data, error } = await supabase
+        .from('stores')
+        .update(updates)
+        .eq('id', storeSettings.id)
+        .select()
+        .single();
 
-        if (error) throw error;
-        setStoreSettings(data);
-      } else {
-        // Update existing store
-        const { data, error } = await supabase
-          .from('store_owners')
-          .update(updates)
-          .eq('id', storeSettings.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setStoreSettings(data);
-      }
+      if (error) throw error;
+      setStoreSettings(data);
 
       toast({
         title: "Settings saved",
@@ -86,7 +76,7 @@ export const useStore = () => {
 
   useEffect(() => {
     fetchStoreSettings();
-  }, []);
+  }, [slug, profile?.store_id]);
 
   return {
     storeSettings,

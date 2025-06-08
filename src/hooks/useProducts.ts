@@ -5,27 +5,29 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Product {
   id: string;
-  title: string;
+  name: string;
   description: string;
   price: number;
   image_url: string | null;
   category: string | null;
-  visible: boolean;
-  store_owner_id: string;
+  is_visible: boolean;
+  store_id: string;
   created_at: string;
   updated_at: string;
 }
 
-export const useProducts = () => {
+export const useProducts = (storeId?: string) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchProducts = async () => {
+    if (!storeId) return;
     try {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -37,36 +39,12 @@ export const useProducts = () => {
     }
   };
 
-  const addProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'store_owner_id'>) => {
+  const addProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'store_id'>) => {
     try {
-      // Get or create store owner
-      let { data: storeOwner } = await supabase
-        .from('store_owners')
-        .select('id')
-        .single();
-
-      if (!storeOwner) {
-        const { data: newStore, error: storeError } = await supabase
-          .from('store_owners')
-          .insert([{
-            business_name: 'My Store',
-            whatsapp_number: '',
-            email: 'store@example.com',
-            currency: 'USD'
-          }])
-          .select()
-          .single();
-
-        if (storeError) throw storeError;
-        storeOwner = newStore;
-      }
-
+      if (!storeId) return;
       const { data, error } = await supabase
         .from('products')
-        .insert([{
-          ...productData,
-          store_owner_id: storeOwner.id
-        }])
+        .insert([{ ...productData, store_id: storeId }])
         .select()
         .single();
 
@@ -141,7 +119,7 @@ export const useProducts = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [storeId]);
 
   return {
     products,

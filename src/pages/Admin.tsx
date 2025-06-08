@@ -19,48 +19,41 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 const AdminContent = () => {
   const { storeSettings, updateStoreSettings, loading: storeLoading } = useStore();
-  const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading } = useProducts();
+  const { products, addProduct, updateProduct, deleteProduct, loading: productsLoading } = useProducts(storeSettings?.id);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   
   // Store settings form
   const [storeForm, setStoreForm] = useState({
-    business_name: '',
+    name: '',
+    description: '',
     whatsapp_number: '',
     logo_url: '',
-    currency: 'USD'
+    banner_url: '',
+    theme_color: '#9333ea'
   });
 
   // Product form
   const [productForm, setProductForm] = useState({
-    title: '',
+    name: '',
     description: '',
     price: '',
     image_url: '',
     category: '',
-    visible: true
+    is_visible: true
   });
 
-  const currencies = [
-    { code: 'USD', name: 'US Dollar' },
-    { code: 'EUR', name: 'Euro' },
-    { code: 'GBP', name: 'British Pound' },
-    { code: 'NGN', name: 'Nigerian Naira' },
-    { code: 'GHS', name: 'Ghanaian Cedi' },
-    { code: 'ZAR', name: 'South African Rand' },
-    { code: 'KES', name: 'Kenyan Shilling' },
-    { code: 'JPY', name: 'Japanese Yen' },
-    { code: 'CNY', name: 'Chinese Yuan' },
-    { code: 'INR', name: 'Indian Rupee' }
-  ];
+  const currencies: any[] = [];
 
   useEffect(() => {
     if (storeSettings) {
       setStoreForm({
-        business_name: storeSettings.business_name || '',
+        name: storeSettings.name || '',
+        description: storeSettings.description || '',
         whatsapp_number: storeSettings.whatsapp_number || '',
         logo_url: storeSettings.logo_url || '',
-        currency: storeSettings.currency || 'USD'
+        banner_url: storeSettings.banner_url || '',
+        theme_color: storeSettings.theme_color || '#9333ea'
       });
     }
   }, [storeSettings]);
@@ -78,17 +71,17 @@ const AdminContent = () => {
   };
 
   const handleSaveProduct = async () => {
-    if (!productForm.title || !productForm.price) {
+    if (!productForm.name || !productForm.price) {
       return;
     }
 
     const productData = {
-      title: productForm.title,
+      name: productForm.name,
       description: productForm.description,
       price: parseFloat(productForm.price),
       image_url: productForm.image_url,
       category: productForm.category,
-      visible: productForm.visible
+      is_visible: productForm.is_visible
     };
 
     if (editingProduct) {
@@ -99,12 +92,12 @@ const AdminContent = () => {
 
     // Reset form
     setProductForm({
-      title: '',
+      name: '',
       description: '',
       price: '',
       image_url: '',
       category: '',
-      visible: true
+      is_visible: true
     });
     setShowProductForm(false);
     setEditingProduct(null);
@@ -113,27 +106,27 @@ const AdminContent = () => {
   const handleEditProduct = (product: any) => {
     setEditingProduct(product);
     setProductForm({
-      title: product.title,
+      name: product.name,
       description: product.description,
       price: product.price.toString(),
       image_url: product.image_url || '',
       category: product.category || '',
-      visible: product.visible
+      is_visible: product.is_visible
     });
-    setShowProductForm(true);
+  setShowProductForm(true);
   };
 
   const handleAIGenerate = (data: { title: string; description: string; category: string }) => {
     setProductForm(prev => ({
       ...prev,
-      title: data.title,
+      name: data.title,
       description: data.description,
       category: data.category
     }));
   };
 
   const toggleProductVisibility = async (productId: string, currentVisibility: boolean) => {
-    await updateProduct(productId, { visible: !currentVisibility });
+    await updateProduct(productId, { is_visible: !currentVisibility });
   };
 
   if (storeLoading || productsLoading) {
@@ -189,22 +182,22 @@ const AdminContent = () => {
                       <div className="aspect-square bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg mb-3 overflow-hidden">
                         <img
                           src={product.image_url || "/placeholder.svg"}
-                          alt={product.title}
+                          alt={product.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex items-start justify-between">
-                          <h3 className="font-semibold text-sm line-clamp-2">{product.title}</h3>
-                          <Badge variant={product.visible ? "default" : "secondary"} className={`text-xs ${product.visible ? "bg-green-500" : ""}`}>
-                            {product.visible ? "Visible" : "Hidden"}
+                          <h3 className="font-semibold text-sm line-clamp-2">{product.name}</h3>
+                          <Badge variant={product.is_visible ? "default" : "secondary"} className={`text-xs ${product.is_visible ? "bg-green-500" : ""}`}>
+                            {product.is_visible ? "Visible" : "Hidden"}
                           </Badge>
                         </div>
                         
                         <p className="text-gray-600 text-xs line-clamp-2">{product.description}</p>
                         <p className="text-lg font-bold text-purple-600">
-                          <CurrencyDisplay amount={product.price} currency={storeSettings?.currency || 'USD'} />
+                          <CurrencyDisplay amount={product.price} currency={'USD'} />
                         </p>
                         
                         {product.category && (
@@ -224,10 +217,10 @@ const AdminContent = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => toggleProductVisibility(product.id, product.visible)}
+                          onClick={() => toggleProductVisibility(product.id, product.is_visible)}
                           className="border-purple-200 hover:bg-purple-50 h-7 w-7 p-0"
                         >
-                          {product.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                          {product.is_visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                         </Button>
                         <Button
                           size="sm"
@@ -261,18 +254,18 @@ const AdminContent = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <div>
-                        <Label htmlFor="title" className="text-xs">Product Title</Label>
+                        <Label htmlFor="name" className="text-xs">Product Title</Label>
                         <Input
-                          id="title"
-                          value={productForm.title}
-                          onChange={(e) => setProductForm(prev => ({ ...prev, title: e.target.value }))}
+                          id="name"
+                          value={productForm.name}
+                          onChange={(e) => setProductForm(prev => ({ ...prev, name: e.target.value }))}
                           placeholder="Enter product title"
                           className="border-purple-200 focus:border-purple-400 h-8 text-sm"
                         />
                       </div>
                       
                       <div>
-                        <Label htmlFor="price" className="text-xs">Price ({storeSettings?.currency || 'USD'})</Label>
+                        <Label htmlFor="price" className="text-xs">Price (USD)</Label>
                         <Input
                           id="price"
                           type="number"
@@ -347,12 +340,12 @@ const AdminContent = () => {
                         setShowProductForm(false);
                         setEditingProduct(null);
                         setProductForm({
-                          title: '',
+                          name: '',
                           description: '',
                           price: '',
                           image_url: '',
                           category: '',
-                          visible: true
+                          is_visible: true
                         });
                       }}
                       className="border-purple-200 hover:bg-purple-50 h-8 px-4 text-xs"
@@ -375,13 +368,24 @@ const AdminContent = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="businessName" className="text-xs">Business Name</Label>
+                    <Label htmlFor="name" className="text-xs">Business Name</Label>
                     <Input
-                      id="businessName"
-                      value={storeForm.business_name}
-                      onChange={(e) => setStoreForm(prev => ({ ...prev, business_name: e.target.value }))}
+                      id="name"
+                      value={storeForm.name}
+                      onChange={(e) => setStoreForm(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Your Store Name"
                       className="border-purple-200 focus:border-purple-400 h-8 text-sm"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="description" className="text-xs">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={storeForm.description}
+                      onChange={(e) => setStoreForm(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Store description"
+                      className="border-purple-200 focus:border-purple-400 text-sm"
                     />
                   </div>
                   
@@ -396,24 +400,7 @@ const AdminContent = () => {
                     />
                   </div>
                   
-                  <div>
-                    <Label htmlFor="currency" className="text-xs">Currency</Label>
-                    <Select
-                      value={storeForm.currency}
-                      onValueChange={(value) => setStoreForm(prev => ({ ...prev, currency: value }))}
-                    >
-                      <SelectTrigger className="border-purple-200 focus:border-purple-400 h-8 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {currencies.map((currency) => (
-                          <SelectItem key={currency.code} value={currency.code} className="text-sm">
-                            {currency.code} - {currency.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+
                   
                   <div>
                     <Label htmlFor="logo" className="text-xs">Store Logo</Label>
@@ -430,6 +417,26 @@ const AdminContent = () => {
                         )}
                       </div>
                     </FileUpload>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="banner" className="text-xs">Banner Image</Label>
+                    <FileUpload onUpload={(url) => setStoreForm(prev => ({ ...prev, banner_url: url }))} folder="banners">
+                      <div className="border-2 border-dashed border-purple-300 rounded-lg p-3 text-center hover:border-purple-400 transition-colors cursor-pointer">
+                        <p className="text-gray-600 text-xs">Upload Banner</p>
+                      </div>
+                    </FileUpload>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="theme" className="text-xs">Theme Color</Label>
+                    <Input
+                      id="theme"
+                      type="color"
+                      value={storeForm.theme_color}
+                      onChange={(e) => setStoreForm(prev => ({ ...prev, theme_color: e.target.value }))}
+                      className="h-8 p-1"
+                    />
                   </div>
                 </div>
                 
@@ -451,7 +458,7 @@ const AdminContent = () => {
 
 const Admin = () => {
   return (
-    <ProtectedRoute requireAdmin={true}>
+    <ProtectedRoute requireRole="admin">
       <AdminContent />
     </ProtectedRoute>
   );
