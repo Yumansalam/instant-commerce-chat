@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileUpload } from '@/components/FileUpload';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const StartStore = () => {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile, loading: authLoading, updateProfile } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
@@ -21,10 +23,13 @@ const StartStore = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    } else if (!authLoading && profile?.store_id) {
+      navigate('/admin');
+    }
+  }, [user, authLoading, profile, navigate]);
 
   const handleLogo = (url: string) => setForm(prev => ({ ...prev, logo_url: url }));
   const handleBanner = (url: string) => setForm(prev => ({ ...prev, banner_url: url }));
@@ -47,7 +52,13 @@ const StartStore = () => {
       .select()
       .single();
 
-    if (!error && data) {
+    if (error) {
+      toast({
+        title: 'Error creating store',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } else if (data) {
       await supabase
         .from('profiles')
         .update({ role: 'admin', store_id: data.id })
@@ -57,6 +68,10 @@ const StartStore = () => {
     }
     setLoading(false);
   };
+
+  if (!user || (profile?.store_id && !authLoading)) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-4">
