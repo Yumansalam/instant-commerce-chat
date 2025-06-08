@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, LogIn, Settings, Plus, Minus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -159,12 +160,12 @@ const Index = () => {
                       asChild
                       className="border-purple-200 hover:bg-purple-50 h-8 px-2 text-xs"
                     >
-                      <a href="/admin">
-                        <Settings className="h-3 w-3 mr-1" />
-                        Admin
-                      </a>
-                    </Button>
-                  )}
+                    <Link to="/admin">
+                      <Settings className="h-3 w-3 mr-1" />
+                      Admin
+                    </Link>
+                  </Button>
+                )}
                   
                   <Button
                     variant="outline"
@@ -172,10 +173,10 @@ const Index = () => {
                     asChild
                     className="border-purple-200 hover:bg-purple-50 h-8 px-2 text-xs"
                   >
-                    <a href="/account">
+                    <Link to="/account">
                       <User className="h-3 w-3 mr-1" />
                       Account
-                    </a>
+                    </Link>
                   </Button>
                 </div>
               ) : (
@@ -185,10 +186,10 @@ const Index = () => {
                   asChild
                   className="border-purple-200 hover:bg-purple-50 h-8 px-2 text-xs"
                 >
-                  <a href="/auth">
+                  <Link to="/auth">
                     <LogIn className="h-3 w-3 mr-1" />
                     Sign In
-                  </a>
+                  </Link>
                 </Button>
               )}
               
