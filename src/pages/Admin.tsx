@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, EyeOff, Save, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -158,10 +159,10 @@ const AdminContent = () => {
           </div>
           <div className="flex space-x-2">
             <Button variant="outline" asChild className="border-purple-200 hover:bg-purple-50 h-8 px-3 text-xs">
-              <a href="/" className="flex items-center space-x-1">
+              <Link to="/" className="flex items-center space-x-1">
                 <ArrowLeft className="h-3 w-3" />
                 <span>Store</span>
-              </a>
+              </Link>
             </Button>
             <Button 
               onClick={() => setShowProductForm(true)}
